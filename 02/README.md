@@ -65,7 +65,7 @@ server.host=0.0.0.0
 metrics.rest-request.enabled=true
 
 # Add the python script location
-app.covid.pyscript=~/Projects/Workshops/EMEA-HOL-GraalVMPolyglot/GraalVM-Polyglot-Labs/02/scripts/department.py
+app.covid.pyscript=~/Projects/Workshops/EMEA-HOL-GraalVMPolyglot/GraalVM-Polyglot-Labs/02/complete/scripts/department.py
 ```
 
 
@@ -172,7 +172,7 @@ public class CovidResource {
 
 }
 
-  ````
+  ```
 
 The `getDepartmentNameByIdFunc` java object refers to a python function  
 
