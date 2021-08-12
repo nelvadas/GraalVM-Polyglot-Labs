@@ -12,7 +12,7 @@ This application relies on data provided by the French National Health Agency [S
 ![](./images/polyglotintro.png)
 
  ## Table of Contents
-* [ Installations](./00/)
+* [ Installation](./00/)
 * [ Building a Simple GraalVM Polyglot Application](./01/)
 * [ Interacting with Guest Language resources](./02/)
 * [ Computed Arrays Using Polyglot Proxies](./03/)

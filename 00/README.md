@@ -1,5 +1,5 @@
 
-# 00 : Installations
+# 00 : Installation
 
 <div class="inline-container">
 <img src="../images/noun_Stopwatch_14262_100.png">

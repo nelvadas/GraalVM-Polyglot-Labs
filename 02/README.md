@@ -82,7 +82,8 @@ Edit the controller  `src/main/java/com/oracle/graalvm/demos/Covid19Controller.j
  *  update the `CovidResource` constructor , include a configResource for the python script path.
  *
 
-```bash 
+```java
+
 package com.oracle.graalvm.demos;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -109,11 +110,15 @@ import java.util.logging.Logger;
 public class CovidResource {
 
     private static Logger logger = Logger.getLogger(CovidResource.class.getName());
+    //reference the python script file
     private String pythonScriptFile;
+    // Create a java Object to hold a reference on the python function getDepartmentNameById
     Function<String, String> getDepartmentNameByIdFunc;
 
     private Context polyglot;
 
+
+    // Automatically inject configuration properties while creating a controller instance
 
     @Inject
     public CovidResource(@ConfigProperty(name = "app.covid.pyscript") String pythonScriptFile)
@@ -179,6 +184,7 @@ The `getDepartmentNameByIdFunc` java object refers to a python function
 ```python
 # department.py
 
+#Make the  getDepartmentNameById function available as a Member of the polyglot context.
 @polyglot.export_value
 def getDepartmentNameById(deptId):
   if deptId in dnames:
