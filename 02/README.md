@@ -214,15 +214,20 @@ PARIS
 
 ## Quiz
 
-Suppose you have an inline python lamda function that convert a USD amount in EUR `lambda x: x*1.1733"` 
-Ho would you invoke this function from Java 
+1. Suppose you have an inline python lamda function that convert a USD amount in EUR `lambda x: x*1.1733"` 
+Ho would you invoke this function from Java ?
+2. What is the purpose of `@polyglot.export_value` annotation in the python script?
+3. What happen when you edit the python script with the Java program  running?
 <details><summary>Solution</summary>
 <p>
+ 1. Lamdda 
 
 ```java
   Value function = polyglot.eval("python", "lambda x: x*1.1733");
   Double xeuro = function.execute(100).asDouble();
 ```
+2. Make the annotated function available in the polyglot context.
+3. Python updates are automatically incorporated in the next java calls .
 </p>
 </details>
 
