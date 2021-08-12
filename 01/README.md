@@ -10,7 +10,7 @@
 
 
 # Installations
-## Install GraalVM Enterprise 
+## Install GraalVM Enterprise :rocket:
 Download the binary from Oracle [GraalVM Pages](https://www.oracle.com/downloads/graalvm-downloads.html?selected_tab=1)
 
 ![User Input](../images/noun_Computer_3477192_100.png)
@@ -233,4 +233,3 @@ Change the Javascript instruction to return the expected string instead of print
 ## Summary
 In this labs, you build and run a simple Polyglot Application.
 Building Polyglot applications require the same tooling as those required for traditionnal Apps.
-
