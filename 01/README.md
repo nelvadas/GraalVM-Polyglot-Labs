@@ -8,89 +8,25 @@
 </strong>
 </div>
 
+## Content
+* [Introduction](./#installations)
 
-# Installations
-## Install GraalVM Enterprise :rocket:
-Download the binary from Oracle [GraalVM Pages](https://www.oracle.com/downloads/graalvm-downloads.html?selected_tab=1)
+
+
+## Introduction
+
+Creating polyglot Apps is very simple from GraalVM Perspective.
+The purpose of this lab is to build a simple JAX-RS  Controller that will run some very simple Javascript code.
+To do so, You will have to create an Helidon project from the Helidon CLI first.
+
+## My first Polyglot REST Endpoint 
 
 ![User Input](../images/noun_Computer_3477192_100.png)
 ![Shell Script](../images/noun_SH_File_272740_100.png)
 
-```bash
-# Untar in your prefered location
-sudo tar -xvf ~/Downloads/graalvm-ee-java11-darwin-amd64-21.2.0.tar.gz -C /Library/Java/JavaVirtualMachines/
-```
 
-
-```bash
-#Make sure the version is referernced by SDKMan
-$ sdk install java  21.2.0-ee11 /Library/Java/JavaVirtualMachines/graalvm-ee-java11-21.2.0/Contents/Home/
-
-Linking java 21.2.0-ee11 to /Library/Java/JavaVirtualMachines/graalvm-ee-java11-21.2.0/Contents/Home/
-Done installing!
-```
-
- 
-```bash
-#Use the last Enterprise version
-$ sdk use java 21.2.0-ee11
-```
-
-
-```bash
-#Check the version you are using
-java -version
-java version "11.0.12" 2021-07-20 LTS
-Java(TM) SE Runtime Environment GraalVM EE 21.2.0 (build 11.0.12+8-LTS-jvmci-21.2-b06)
-Java HotSpot(TM) 64-Bit Server VM GraalVM EE 21.2.0 (build 11.0.12+8-LTS-jvmci-21.2-b06, mixed mode, sharing)
-```
-
-## Install GraalVM Extensions for Guest languages 
-
-By default GraalVM comes with Javascript support, you need to install others languages support with Graal updater 
-
-```bash
-# Install python, R ( mandatory ) , native-image(optionnal for this lab)
-gu install python
-gu install R
-```
-
-Run the following gu commands and accept the licences requirements when asked.
-```bash
-#Check GraalVM Component list
-$  gu list
-ComponentId              Version             Component name                Stability                     Origin
----------------------------------------------------------------------------------------------------------------------------------
-graalvm                  21.2.0              GraalVM Core                  -
-R                        21.2.0              FastR                         Experimental                  github.com
-js                       21.2.0              Graal.js                      Supported
-llvm-toolchain           21.2.0              LLVM.org toolchain            Supported                     github.com
-native-image             21.2.0              Native Image                  Early adopter                 oca.opensource.oracle.com
-python                   21.2.0              Graal.Python                  Experimental                  oca.opensource.oracle.com
-```
-
-## Install Helidon CLI
-
-Use the following instructions to setup Helidon CLI for your target platform
-[Helidon CLI setup ](https://github.com/oracle/helidon/blob/master/HELIDON-CLI.md)
-
-For OSX
-```
-curl -O https://helidon.io/cli/latest/darwin/helidon
-chmod +x ./helidon
-sudo mv ./helidon /usr/local/bin/
-```
-Check the helidon version 
-```
-helidon version
-build.date      2021-04-30 13:00:06 PDT
-build.version   2.2.0
-build.revision  17f7cba0
-latest.helidon.version  2.3.2
-```
-
-# My First Polyglot REST Endpoint 
-Create your Helidon covid19-trends Microprofile REST App  
+Create your Helidon covid19-trends `Microprofile` REST Application from your terminal
+  
 ```bash
 # Follow the conversation 
 $  helidon init
@@ -134,7 +70,7 @@ Add the Graal SDK [https://mvnrepository.com/artifact/org.graalvm.sdk/graal-sdk/
 Rename the the `src/main/java/com/oracle/graalvm/demos/GreetingController.java` file to 
 `src/main/java/com/oracle/graalvm/demos/Covid19Controller.java` and edit it with the following content
 
-```bash 
+```java 
 package com.oracle.graalvm.demos;
 
 import org.graalvm.polyglot.Context;
@@ -157,6 +93,11 @@ public class CovidResource {
     @Inject
     public CovidResource() {
         try {
+          // First create a polyglot contexte to run our code
+          // Context provides an execution environment for guest languages. 
+          // you can pass a list of expected language for this context in the newBuilder Method 
+          // R language requires the allowAllAccess flag to be set to true to run .
+
             this.polyglot = Context.newBuilder().allowAllAccess(true).build();
       } catch (Exception e) {
             e.printStackTrace();
@@ -167,6 +108,10 @@ public class CovidResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response help() {
+       // Evaluate a polyglott expression
+       // language = js
+       // Code to execute as the second parameter.
+       // convert the Value returned asString
         String welcome = polyglot.eval("js", "print('{\"Welcome to GraalVM Polyglot EMEA HOL!\"}');").asString();
         return Response.ok(welcome).build();
 

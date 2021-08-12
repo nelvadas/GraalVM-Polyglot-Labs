@@ -331,14 +331,16 @@ The covid trends for Paris should be available
 
 ## Quiz
 
-1. While creating the initial Polyglot Context we used the following instruction  `this.polyglot = Context.newBuilder().allowAllAccess(true).build();``
+1. While creating the initial Polyglot Context we used the following instruction  `this.polyglot = Context.newBuilder().allowAllAccess(true).build();`
 For which language the `allowAllAccess=true` is required?  
 2. how is the trend in the department whose id is the next LTS Java Version (Coming in September 2021)
 <details><summary>Solution</summary>
 <p>
 1. language  R 
 
-2. Java 17 ; 17=> Charentes  Maritimes 
+2. Java 17 ; `17 => Charentes  Maritimes`
+http://localhost:8080/covid19/fr/trends/17
+
 ![Charente Maritime Covid Trends(17)](../images/covidMap17.png)
 </p>
 </details>
