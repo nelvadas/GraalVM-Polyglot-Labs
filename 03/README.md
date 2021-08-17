@@ -10,17 +10,14 @@
 
 
 # Objective
-* customize Java interoperability by mimicking guest language types 
-* Call a R functions with custom parameters from a Java program
- 
+The purpose of this lab is to showcase **Java interoperability with guest language types.**
 
-
-# Todo 
-In the folowing lab, you will have to :
-*  Manually download the dataset
-*  Use an R library to plot Covid Trends for a specific departement
+ To do so, we are going to follow the following steps;
+*  Manually download a CSV dataset of covid-19 hospitalisation's number per day and  per departement in France.
 *  Create a new Java/Python polyglot REST endpoint `/covid19/fr/trends/{departmentId}` to visualize covid trends in the specified departement.
-* Use Porxies Array to mimic R Dataframe Types.
+*  The Java REST Controller will rely on a Polyglot Call `( Java -> R)` using ` Java Proxy Arrays` Parameters to get the graphics representing the covid-19 trends in the specified department.
+*  Return the graphics to the browser in `image/svg+xml`format 
+
 
 
 
@@ -30,18 +27,29 @@ In the folowing lab, you will have to :
 ![User Input](../images/noun_Computer_3477192_100.png)
 ![Shell Script](../images/noun_SH_File_272740_100.png)
 
+The Hospitalization data file is available at [donnees-hospitalieres-covid19-yyyy-mm-yy-HHhMM.csv](https://www.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/)
+It contains Covid-19  Hospitalization data in France departements starting from  `2020-03-18` to date.
+This file is maintained by the French Public Health Agency [`Santé Publique France`](https://www.santepubliquefrance.fr/) . Is file is  updated very frequently (assume a daily basis).
+
+A [stable download URL](https://www.data.gouv.fr/fr/datasets/r/6fadff46-9efd-4c53-942a-54aca783c30c) of the file is provided  as well for automation processes. 
+
+Use the following curl command to download the file through its stable url 
 ```bash
-# Download the latest Hospitalisation dataset from French National Health Agency
+# Download the latest Hospitalisation dataset from French Public Health Agency
 
 curl -L https://www.data.gouv.fr/fr/datasets/r/6fadff46-9efd-4c53-942a-54aca783c30c -o /tmp/covid-data.csv
 ```
+In this case the file is stored in `/tmp/covid-data.csv`; 
+> Keep your destination folder as we will be using this in the next steps.
 
 
-Explore the file structure 
+
+The file contains quite simple and self explanatory data columns,
+
 ``` bash
 # dep=Department Identifier, Jour=Date, 
-#incid_hosp= Number of peolple admitted in hospital 
-# incid_rea: People in critical state in the departement
+#incid_hosp= Number of peolple hospitalized for covid-19  
+# incid_rea: People admited to intensive care in the departement
 $ head /tmp/covid-data.csv
 "dep";"jour";"incid_hosp";"incid_rea";"incid_dc";"incid_rad"
 "01";2020-03-19;1;0;0;0
@@ -54,9 +62,9 @@ $ head /tmp/covid-data.csv
 "01";2020-03-26;14;3;2;2
 "01";2020-03-27;14;2;0;0
 ```
-The most important column we will be using in this file are `dep, Date, incid_hosp, incid_rea``
 
-
+For this lab, we will rely on a set of colums `dep, Date, incid_hosp, incid_rea`
+to plot a line graphs that show the evolution of covid-19 hospitalizations in France since over the time . 
 
 ```bash
 #Download the R script in   03/complete/scripts folder
@@ -65,7 +73,14 @@ $ wget https://raw.githubusercontent.com/nelvadas/helidon-polyglot-demo/master/s
 
 ```
 
-Explore the R script
+
+
+The following R script uses [Lattice](https://cran.r-project.org/web/packages/lattice/index.html) , a popular Graphics library  .
+
+* It first reads the dataset in parameters.
+*  Assign specific variables for the departement id and  the departemnt  name that are printed on the graphic labels
+*  Get the csv file containing the data.
+
 ```R
 require(lattice);
 
@@ -88,16 +103,16 @@ frdata <- read.table(file=paste(csvFilename) , sep=";", h=TRUE);
 names(frdata)
 covid_ds = subset(frdata, frdata$dep == deptId)
 attach(covid_ds)
-#X contient les dates
+#X Format dates in English 
 x<-as.Date(jour,format = "%Y-%m-%d")
 
 # y le nombre  d'hospitalisations
 y<-incid_hosp
 
-# z le nombre de réanimation
+# critical cases
 z<-incid_rea
-# Courbe des hospitalisations 
 
+# hospitalisations trends
 g1<-xyplot(y~x,type="l", ylab="Nouvelles Hospitalisations COVID-19",col="blue",main=paste(" D ",deptId, ":",deptName )); 
 print(g1)
 grDevices:::svg.off()
@@ -105,16 +120,19 @@ grDevices:::svg.off()
 
 ```
 
-The R script expect the caller to send a dataframe/ Associative array that contains 
+The R script expects the caller to send a dataframe/ Associative array with the following content
 * an array of departement identifier with name `deparmentId`
 * an array of department Names with name `departmentName`
 * an arry of filenames called `csvFilePath` 
 
 
+The R file will be use in the Java REST Controller
 
 
 ![User Input](../images/noun_Computer_3477192_100.png)
 ![Java](../images/noun_java_825609_100.png)
+
+Edit the application configuration file to add `covidgraph.R` and `covid-data.csv` loaction.
 
 ## Application Configuration
 
@@ -131,13 +149,13 @@ server.host=0.0.0.0
 # Turn on support for REST.request SimpleTimers for all JAX-RS endpoints
 metrics.rest-request.enabled=true
 
-# Add the python script location
+#  the python script location
 app.covid.pyscript=~/Projects/Workshops/EMEA-HOL-GraalVMPolyglot/GraalVM-Polyglot-Labs/03/complete/scripts/department.py
 
-# Add a reference to the R Script
+# +++Add a reference to the R Script
 app.covid.rscript=~/Projects/Workshops/EMEA-HOL-GraalVMPolyglot/GraalVM-Polyglot-Labs/03/complete/scripts/covidgraph.R
 
-# Add the default location of the csv data file 
+# +++Add the default location of the csv data file 
 app.covid.data.download.csvfullpath=/tmp/covid-data.csv
 ```
 
@@ -346,7 +364,7 @@ http://localhost:8080/covid19/fr/trends/17
 </details>
 
 ## Summary
-In this labs, you build and run Polyglot Application running Java, Javascript , R and Python
+In this labs, you built and run Polyglot Application running Java, Javascript , R and Python
 You used Proxy Arrays to simulate R Dataframes
 
 
