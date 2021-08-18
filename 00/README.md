@@ -8,14 +8,17 @@
 </strong>
 </div>
 
-The purpose of this lab is to help you setup your PC with the required software to run this lab.
 ![User Input](../images/noun_Computer_3477192_100.png)
 ![Shell Script](../images/noun_SH_File_272740_100.png)
 
+Before diging into the details of GraalVM Polyglot features,  you need setup your PC with the required software to run this lab.
+
+
 
 ## Install GraalVM Enterprise :rocket:
-The instructions to install GraalVM can be found online[here](https://docs.oracle.com/en/graalvm/enterprise/20/docs/getting-started/installation-linux/)
+The instructions to install GraalVM can be found  [here](https://docs.oracle.com/en/graalvm/enterprise/20/docs/getting-started/installation-linux/)
 
+:warning: 
 This workshop assumes that you are using either Linux or Mac, but is equally applicable to Windows. You might just have to adpat it, for example the bash shell script sections etc may need to be updated.
 
 ```bash
@@ -39,6 +42,7 @@ Done installing!
 $ sdk use java 21.2.0-ee11
 ```
 
+After installing GraalVM, set your Java Home to point on these GraalVM fresh version.
 
 ```bash
 #Check the version you are using
@@ -48,9 +52,10 @@ Java(TM) SE Runtime Environment GraalVM EE 21.2.0 (build 11.0.12+8-LTS-jvmci-21.
 Java HotSpot(TM) 64-Bit Server VM GraalVM EE 21.2.0 (build 11.0.12+8-LTS-jvmci-21.2-b06, mixed mode, sharing)
 ```
 
-## Install GraalVM Extensions for Guest languages 
 
-By default GraalVM comes with Javascript language extension, you need to install others languages support with Graal updater tool
+## Install GraalVM Extensions for guest languages 
+
+By default GraalVM comes with Javascript language extension, you need to install others languages support using the provided Graal updater tool `gu`.
 
 ```bash
 # Install python, R ( mandatory ) , native-image(optionnal for this lab)
@@ -58,7 +63,7 @@ gu install python
 gu install R
 ```
 
-Run the following gu commands and accept the licences requirements when asked.
+Run the below `gu install` instructions  and accept :white_check_mark:	 the licences requirements when asked.
 ```bash
 #Check GraalVM Component list
 $  gu list
@@ -73,6 +78,7 @@ python                   21.2.0              Graal.Python                  Exper
 ```
 
 ## Install Helidon CLI
+`Helidon` is a simple, fast and lightweigth framework provided by Oracle to support your Microservice journey. We will be relying on Helidon to  build the Covid-19 REST controller of the application. Helidon also provided a CLI util to rapidly setup a new project.
 
 Use the following instructions to setup Helidon CLI for your target platform
 [Helidon CLI setup ](https://github.com/oracle/helidon/blob/master/HELIDON-CLI.md)
