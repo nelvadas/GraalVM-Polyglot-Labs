@@ -15,7 +15,7 @@
 
 ## Introduction
 
-Creating polyglot Apps is very simple from GraalVM Perspective.
+Creating polyglot Apps is simple from GraalVM Perspective.
 The purpose of this lab is to build a simple JAX-RS  Controller that will run some simple Javascript code.
 To do so, You will have to create an Helidon project using the Helidon CLI first.
 
@@ -193,5 +193,5 @@ Welcome to GraalVM Polyglot EMEA HOL!
 </details>
 
 ## Summary
-In this labs, you build and run a simple Polyglot Application.
+In this labs, you built and run a simple Polyglot Application Mixing Java and Javascript. :white_check_mark:	
 Building Polyglot applications require the same tooling as those required for traditionnal Apps.
