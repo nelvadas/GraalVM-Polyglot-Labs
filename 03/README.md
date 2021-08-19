@@ -139,7 +139,7 @@ Edit the application configuration file to add two new properties:.
 ## Application Configuration
 
  Edit the `src/main/resources/META-INF/microprofile-config.properties`
-```bash
+<pre><code>
 
 # Application properties. This is the default greeting
 app.greeting=covid19-trends
@@ -155,11 +155,11 @@ metrics.rest-request.enabled=true
 app.covid.pyscript=~/Projects/Workshops/EMEA-HOL-GraalVMPolyglot/GraalVM-Polyglot-Labs/03/complete/scripts/department.py
 
 # +++Add a reference to the R Script
-app.covid.rscript=~/Projects/Workshops/EMEA-HOL-GraalVMPolyglot/GraalVM-Polyglot-Labs/03/complete/scripts/covidgraph.R
+<b>app.covid.rscript=~/Projects/Workshops/EMEA-HOL-GraalVMPolyglot/GraalVM-Polyglot-Labs/03/complete/scripts/covidgraph.R</b>
 
 # +++Add the default location of the csv data file 
-app.covid.data.download.csvfullpath=/tmp/covid-data.csv
-```
+<b>app.covid.data.download.csvfullpath=/tmp/covid-data.csv</b>
+</code></pre>
 
 - add a private instance `rScriptFile` to hold a reference on the R script location
 - add a private instance to keep the location of the csv data file `csvLocalFilePath` 
@@ -358,17 +358,15 @@ public final class CovidDtoTable {
 
 ## Testing 
 
-Run the application from your  browser/Terminal 
-if the helidon Dev loop is not enabled, 
-Build and start the application using 
+Run the application from your prefered browser [http://localhost:8080/covid19/fr/trends/75](http://localhost:8080/covid19/fr/trends/75)
+if the helidon Dev loop is not enabled, build and start the application first 
 ```shell
 # build and run 
-mvn clean install 
-java -jar target/covid19-trends.jar
+$ mvn clean install 
+$ java -jar target/covid19-trends.jar
 ```
-
-Opent the newly created endpoint from your web browser.  http://localhost:8080/covid19/fr//trends/75
-The covid trends for Paris should be available 
+Open the newly created endpoint from your web browser.  http://localhost:8080/covid19/fr/trends/75
+The covid trends for Paris should be available .
 
 ![Paris Covid Trends](../images/covidMapParis.png)
 
@@ -392,8 +390,9 @@ http://localhost:8080/covid19/fr/trends/17
 </details>
 
 ## Summary
-In this labs, you built and run Polyglot Application running Java, Javascript , R and Python
-You used Proxy Arrays to simulate R Dataframes
+In this labs, you built and run polyglot application running Java, Javascript , R and Python
+You used Proxy Arrays to simulate R dataframes. 
+Congratulations for completing this lab :1st_place_medal:	:trophy:	
 
 ## Resources 
 * [Proxy Array Interface ](https://docs.oracle.com/en/graalvm/enterprise/20/sdk/org/graalvm/polyglot/proxy/ProxyArray.html)

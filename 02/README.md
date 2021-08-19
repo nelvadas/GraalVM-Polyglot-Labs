@@ -10,8 +10,8 @@
 
 
 # Objective
-* Access Guest Languages Directly from Java  
-* Define Guest Language Functions as Java Values 
+* Access Guest languages directly from Java Code
+* Define guest language functions as Java Values 
  
 
 
@@ -33,7 +33,6 @@ In the folowing lab, you will have to :
 
 ```shell
 # Create a `scripts` folder besides your project
-
 $ mkdir scripts
 $ cd scripts
 ```
@@ -45,8 +44,10 @@ $ wget https://raw.githubusercontent.com/nelvadas/helidon-polyglot-demo/master/s
 
 ```
 
-The python scripts has two items:
-* a dictionnary containing department ids( key) and names ( values)
+The python scripts has two main parts:
+* a dictionnary global vairable `dnames` containing department ids( key) and names ( values)
+* a function `getDepartmentNameById` that we intend to call in the Java Controller
+
 
 ```python
 # department.py
@@ -76,7 +77,7 @@ def getDepartmentNameById(deptId):
     return "-"
   ```
 
-The `polyglot.export_value` annotation ...
+The `polyglot.export_value` decorator on top of the `getDepartmentNameById`function is used to export this fonction with the name `getDepartmentNameById` in our polyglot context so others applications can have access to it
 
 
 ![User Input](../images/noun_Computer_3477192_100.png)
@@ -85,7 +86,7 @@ The `polyglot.export_value` annotation ...
 ## Application Configuration
 
  Edit the `src/main/resources/META-INF/microprofile-config.properties` to add a new config property `app.covid.pyscript`  pointing to the location of the python script you want to use in your Java Endpoint 
-```bash
+<pre><code>
 
 # Application properties. This is the default greeting
 app.greeting=covid19-trends
@@ -98,8 +99,8 @@ server.host=0.0.0.0
 metrics.rest-request.enabled=true
 
 # Add the python script location
-app.covid.pyscript=~/Projects/Workshops/EMEA-HOL-GraalVMPolyglot/GraalVM-Polyglot-Labs/02/complete/scripts/department.py
-```
+<b>app.covid.pyscript=~/Projects/Workshops/EMEA-HOL-GraalVMPolyglot/GraalVM-Polyglot-Labs/02/complete/scripts/department.py</b>
+</code></pre>
 
 As soon as the python script is avilable in your workspace, 
 you can call
@@ -248,7 +249,7 @@ def getDepartmentNameById(deptId):
   ```
 
 
-Run the application from your  browser/Terminal 
+Run the application from your  browser/terminal 
 if the helidon Dev loop is not enabled, 
 Build and start the application using 
 ```shell
@@ -295,7 +296,8 @@ Ho would you invoke this function from Java ?
 </details>
 
 ## Summary
-In this labs, you build and run Polyglot Application running Java, Javascript and Python
+In this labs, you built and run a polyglot application running Java, Javascript and Python
 You used various mechanisms to access functions from Guest languages as Java Values
 Use the  `execute`and `apply` methods to invoke guest functions.
+Congratulation for your :2nd_place_medal:	
 

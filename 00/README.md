@@ -94,7 +94,7 @@ latest.helidon.version  2.3.2
 ```
 
 
-## Others Tools and utilities
+## Others tools and utilities
 
 You may also like to install the following tools
 * [Apache Maven](https://maven.apache.org/)
