@@ -366,11 +366,9 @@ $ mvn clean install
 $ java -jar target/covid19-trends.jar
 ```
 Open the newly created endpoint from your web browser.  http://localhost:8080/covid19/fr/trends/75
-The covid trends for Paris should be available .
+The covid trends for *Paris* should be available .
 
 ![Paris Covid Trends](../images/covidMapParis.png)
-
-
 
 
 ## Quiz
@@ -382,8 +380,8 @@ For which language the `allowAllAccess=true` is required?
 <p>
 1. language  R 
 
-2. Java 17 ; `17 => Charentes  Maritimes`
-http://localhost:8080/covid19/fr/trends/17
+2. The next java LTS planned for September 2021 is `Java 17` ; [http://localhost:8080/covid19/fr/trends/17](http://localhost:8080/covid19/fr/trends/17)
+
 
 ![Charente Maritime Covid Trends(17)](../images/covidMap17.png)
 </p>

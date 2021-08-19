@@ -47,7 +47,7 @@ Java package name (Default: me.nono.mp.quickstart): <b>com.oracle.graalvm.demos<
 </code></pre>
 
 Start the Helidon Dev loop to automatically preview the changes
-```
+```shell
 $ helidon dev
 helidon dev starting ...
 | building
