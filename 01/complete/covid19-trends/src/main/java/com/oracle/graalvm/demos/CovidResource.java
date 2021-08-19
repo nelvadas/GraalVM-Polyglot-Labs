@@ -39,8 +39,8 @@ public class CovidResource {
 
     public Response help() {
 
-        String welcome = polyglot.eval("js", "print('{\"Welcome to GraalVM Polyglot EMEA HOL!\"}');").asString();
-        String welcome1 = polyglot.eval("js", "'Welcome to GraalVM Polyglot EMEA HOL!\\n';").asString();
+        //String welcome = polyglot.eval("js", "print('{\"Welcome to GraalVM Polyglot EMEA HOL!\"}');").asString();
+        String welcome = polyglot.eval("js", "'Welcome to GraalVM Polyglot EMEA HOL!\\n';").asString();
         return Response.ok(welcome).build();
 
 

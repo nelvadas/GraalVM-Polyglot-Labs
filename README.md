@@ -9,7 +9,7 @@ using  various languages:
 * `Python` 
 * `R` 
 
-Functionally, the application makes it possible to visualize the covid-19 hospitalizations  trends in a French in France department. This application relies on data provided by the French Pucblic Health Agency [Santé Publique France](https://www.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/).
+Functionally, the application makes it possible to visualize the covid-19 hospitalizations  trends in a French department. This application relies on data provided by the French Pucblic Health Agency [Santé Publique France](https://www.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/).
 
 
 ## Stack
@@ -19,10 +19,10 @@ The application consists of a JAX-RS Controller with a set of  REST Helidon endp
 ![](./images/polyglotintro.png)
 
  ## Table of Contents
-* [01. Installation](./00/)
-* [02. Building a Simple GraalVM Polyglot Application](./01/)
-* [03. Interacting with Guest Language resources](./02/)
-* [04. Computed Arrays Using Polyglot Proxies](./03/)
+* [00. Installation](./00/)
+* [01. Building a Simple GraalVM Polyglot Application](./01/)
+* [02. Interacting with Guest Language resources](./02/)
+* [03. Computed Arrays Using Polyglot Proxies](./03/)
 
 
 ## Resources

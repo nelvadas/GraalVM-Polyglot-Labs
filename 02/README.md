@@ -19,7 +19,7 @@
 In the folowing lab, you will have to :
 *  Create a new Java/Python polyglot REST endpoint `/covid19/fr/department/{departmentId}`
 *  The new endpoint returns a department name based on its number `eg.  75 => Paris`
-*  The endpoint relies on an existing Python script to retreive departement names. ( direct member access)
+*  The endpoint relies on an existing `Python` script to retreive departement names. ( direct member access)
 *  The python script is made available as a resource in the project.
 *  Define a python lambda function as Java Value. 
 
@@ -31,19 +31,52 @@ In the folowing lab, you will have to :
 ![User Input](../images/noun_Computer_3477192_100.png)
 ![Shell Script](../images/noun_SH_File_272740_100.png)
 
-```bash
+```shell
 # Create a `scripts` folder besides your project
 
-mkdir scripts
-cd scripts
+$ mkdir scripts
+$ cd scripts
 ```
 
 
-```bash
+```shell
 #Download the python script
 $ wget https://raw.githubusercontent.com/nelvadas/helidon-polyglot-demo/master/scripts/department.py
 
 ```
+
+The python scripts has two items:
+* a dictionnary containing department ids( key) and names ( values)
+
+```python
+# department.py
+import polyglot
+
+dnames={
+"01":  "AIN",
+"02":  "AISNE",
+"03":  "ALLIER",
+"05":  "HAUTES-ALPES",
+"04":  "ALPES-DE-HAUTE-PROVENCE",
+"06":  "ALPES-MARITIMES",
+"07":  "ARDÈCHE",
+"08":  "ARDENNES",
+"09":  "ARIÈGE",
+#...
+"972":  "MARTINIQUE",
+"974":  "RÉUNION"
+}
+
+#Make the  getDepartmentNameById function available as a Member of the polyglot context.
+@polyglot.export_value
+def getDepartmentNameById(deptId):
+  if deptId in dnames:
+      return dnames[deptId]
+  else: 
+    return "-"
+  ```
+
+The `polyglot.export_value` annotation ...
 
 
 ![User Input](../images/noun_Computer_3477192_100.png)
@@ -51,7 +84,7 @@ $ wget https://raw.githubusercontent.com/nelvadas/helidon-polyglot-demo/master/s
 
 ## Application Configuration
 
- Edit the `src/main/resources/META-INF/microprofile-config.properties`
+ Edit the `src/main/resources/META-INF/microprofile-config.properties` to add a new config property `app.covid.pyscript`  pointing to the location of the python script you want to use in your Java Endpoint 
 ```bash
 
 # Application properties. This is the default greeting
@@ -68,7 +101,11 @@ metrics.rest-request.enabled=true
 app.covid.pyscript=~/Projects/Workshops/EMEA-HOL-GraalVMPolyglot/GraalVM-Polyglot-Labs/02/complete/scripts/department.py
 ```
 
-
+As soon as the python script is avilable in your workspace, 
+you can call
+Now we are going to edit the controller to show how you can call Python from Java
+to retreive the department names based on departement id.
+The controller should received the department id in java and shared this parameter with the python script.
 
 #  Calling Python function from Java
 
@@ -80,7 +117,7 @@ Edit the controller  `src/main/java/com/oracle/graalvm/demos/Covid19Controller.j
  *  Add a private instance `pythonScriptFile` to hold a reference on the Python script
  *  `Function<String, String> getDepartmentNameByIdFunc;` hold a reference on the function we want to call in order to retreive department names
  *  update the `CovidResource` constructor , include a configResource for the python script path.
- *
+ *  Load a reference to the python Function `getDepartmentNameById` and keep it in a Java Property
 
 ```java
 
@@ -115,17 +152,26 @@ public class CovidResource {
     // Create a java Object to hold a reference on the python function getDepartmentNameById
     Function<String, String> getDepartmentNameByIdFunc;
 
+    // Polyglot context to run code with guest languages
     private Context polyglot;
 
 
-    // Automatically inject configuration properties while creating a controller instance
+    // Automatically inject configuration properties from src/main/resources/META-INF/microprofile-config.properties  when The Controller instance is created
 
     @Inject
     public CovidResource(@ConfigProperty(name = "app.covid.pyscript") String pythonScriptFile)
     {
         try {
+
+          // Context provides an execution environment for guest languages. 
+          // you can pass a list of expected language for this context in the newBuilder Method 
+          // R language requires the allowAllAccess flag to be set to true to run .
+
             this.polyglot = Context.newBuilder().allowAllAccess(true).build();
+            // keep the python script location
             this.pythonScriptFile = pythonScriptFile;
+
+            //******** Intialize the Python function as a Java Property. *******
             this.getDepartmentNameByIdFunc = getPythonDeptFunction();
 
         } catch (Exception e) {
@@ -134,32 +180,9 @@ public class CovidResource {
     }
 
 
-     @Path("/help")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response help() {
-        String welcome = polyglot.eval("js", "'Welcome to GraalVM Polyglot EMEA HOL!\\n';").asString();
-        return Response.ok(welcome).build();
-    }
-
-    @Path("/department/{departmentId}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getDepartmentName(@PathParam("departmentId") String departmentId) {
-
-        try {
-            String dname = getDepartmentNameByIdFunc.apply(departmentId);
-            logger.info(String.format("Departement 1%s=%s", departmentId, dname));
-            return Response.ok(dname).build();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-
-    }
-
-    /**
+   /**
+     * This function uses the polyglot contexte to load the python script first
+     * then keep a reference on the getDepartmentNameById 
      * Load the PYTHON script that provide a function to retrieve department names
      * from their Ids.
      *
@@ -173,6 +196,37 @@ public class CovidResource {
                 pyPart.getContext().getPolyglotBindings().getMember("getDepartmentNameById").as(Function.class);
         return getDepartmentNameByIdFunc;
     }
+
+
+    @Path("/help")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response help() {
+        String welcome = polyglot.eval("js", "'Welcome to GraalVM Polyglot EMEA HOL!\\n';").asString();
+        return Response.ok(welcome).build();
+    }
+
+
+    // The new Endpoint to retreive department 's name from departmentId
+    @Path("/department/{departmentId}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDepartmentName(@PathParam("departmentId") String departmentId) {
+
+        try {
+            // Call the Pyhton function  from the getDepartmentNameByIdFunc variables with the deparmentId as parameter
+            String dname = getDepartmentNameByIdFunc.apply(departmentId);
+            logger.info(String.format("Departement 1%s=%s", departmentId, dname));
+            return Response.ok(dname).build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+
+    }
+
+   
 
 
 }
@@ -199,14 +253,14 @@ if the helidon Dev loop is not enabled,
 Build and start the application using 
 ```shell
 # build and run 
-mvn clean install 
-java -jar target/covid19-trends.jar
+$ mvn clean install 
+$ java -jar target/covid19-trends.jar
 ```
 
-Testing from Curl/Httpie
-```bash
+Testing from curl
+```shell
 # get the department with id 75
-http http://localhost:8080/covid19/fr/department/75
+$ curl -v http://localhost:8080/covid19/fr/department/75
 HTTP/1.1 200 OK
 Content-Type: application/json
 Date: Wed, 11 Aug 2021 14:42:45 +0200
@@ -234,6 +288,9 @@ Ho would you invoke this function from Java ?
 ```
 2. Make the annotated function available in the polyglot context.
 3. Python updates are automatically incorporated in the next java calls .
+  if you changed the python code whitout restarting the Java controller, the python updates are availables in the next calls on the endpoint.
+  You can swap two departments id and names to confirm the behaviour.
+
 </p>
 </details>
 

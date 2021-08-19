@@ -16,8 +16,8 @@
 ## Introduction
 
 Creating polyglot Apps is very simple from GraalVM Perspective.
-The purpose of this lab is to build a simple JAX-RS  Controller that will run some very simple Javascript code.
-To do so, You will have to create an Helidon project from the Helidon CLI first.
+The purpose of this lab is to build a simple JAX-RS  Controller that will run some simple Javascript code.
+To do so, You will have to create an Helidon project using the Helidon CLI first.
 
 ## My first Polyglot REST Endpoint 
 
@@ -25,30 +25,28 @@ To do so, You will have to create an Helidon project from the Helidon CLI first.
 ![Shell Script](../images/noun_SH_File_272740_100.png)
 
 
-Create your Helidon covid19-trends `Microprofile` REST Application from your terminal
-  
-```bash
-# Follow the conversation 
+Create your Helidon covid19-trends `Microprofile` REST Application from your terminal and follow the diaglog
+<pre><code >
+ 
 $  helidon init
 Using Helidon version 2.3.2
 Helidon flavor
   (1) SE
-  (2) MP
-Enter selection (Default: 1): 2
+  <b>(2) MP</b>
+Enter selection (Default: 1): <b>2</b>
 Select archetype
   (1) bare | Minimal Helidon MP project suitable to start from scratch
-  (2) quickstart | Sample Helidon MP project that includes multiple REST operations
+  <b>(2) quickstart | Sample Helidon MP project that includes multiple REST operations</b>
   (3) database | Helidon MP application that uses JPA with an in-memory H2 database
-Enter selection (Default: 1): 2
-Project name (Default: quickstart-mp): covid19-trends
-Project groupId (Default: me.nono-helidon): com.oracle.graalvm.demos
-Project artifactId (Default: quickstart-mp): covid19-trends
-Project version (Default: 1.0-SNAPSHOT):
-Java package name (Default: me.nono.mp.quickstart): com.oracle.graalvm.demos
+Enter selection (Default: 1): <b>2</b>
+Project name (Default: quickstart-mp): <b>covid19-trends</b>
+Project groupId (Default: me.nono-helidon): <b>com.oracle.graalvm.demos</b>
+Project artifactId (Default: quickstart-mp): <b>covid19-trends</b>
+Project version (Default: 1.0-SNAPSHOT):<b></b>
+Java package name (Default: me.nono.mp.quickstart): <b>com.oracle.graalvm.demos</b>
+</code></pre>
 
-```
-
-Start the Helidon Dev loop to preview the changes
+Start the Helidon Dev loop to automatically preview the changes
 ```
 $ helidon dev
 helidon dev starting ...
@@ -57,15 +55,17 @@ helidon dev starting ...
 | covid19-trends starting
 ```
 
-
 ![User Input](../images/noun_Computer_3477192_100.png)
 ![Java](../images/noun_java_825609_100.png)
 
+We now have a basic Helidon java project, in order to use GraalVM Polyglot features and API, the project required the Graal-Sk dependency.
 ## Add GraalVM SDK dependency
-Add the Graal SDK [https://mvnrepository.com/artifact/org.graalvm.sdk/graal-sdk/21.2.0](https://mvnrepository.com/artifact/org.graalvm.sdk/graal-sdk/21.2.0) to your maven pom.xml or Gradle Build file.
-
+Add the Graal SDK [https://mvnrepository.com/artifact/org.graalvm.sdk/graal-sdk/21.2.0](https://mvnrepository.com/artifact/org.graalvm.sdk/graal-sdk/21.2.0) 
+to your maven pom.xml or Gradle Build file accordingly.
+Once dependencies are OK, you now have to create your covid-19 controller.
 
 ## Create the Covid19Resource Controller 
+By using the quickstart artifact, we have had a default Controller present after generating the project,
 
 Rename the the `src/main/java/com/oracle/graalvm/demos/GreetingController.java` file to 
 `src/main/java/com/oracle/graalvm/demos/Covid19Controller.java` and edit it with the following content
@@ -145,13 +145,17 @@ if the helidon Dev loop is not enabled,
 Build and start the application using 
 ```shell
 # build and run 
-mvn clean install 
-java -jar target/covid19-trends.jar
+$ mvn clean install 
+$ java -jar target/covid19-trends.jar
 ```
 
 Testing from Curl 
-```
-curl http://localhost:8080//covid19/fr/help
+```shell
+$ curl -i  http://localhost:8080/covid19/fr/help
+HTTP/1.1 200 OK
+Content-Length: 0
+Date: Thu, 19 Aug 2021 16:02:44 +0200
+connection: keep-alive
 
 ```
 From the application logs you can see the printed message 
@@ -171,6 +175,19 @@ Change the Javascript instruction to return the expected string instead of print
 
 ```java
   String welcome = polyglot.eval("js", "'Welcome to GraalVM Polyglot EMEA HOL!\\n';").asString();
+```
+
+Testing from curl again 
+```shell
+$ curl -i  http://localhost:8080/covid19/fr/help
+HTTP/1.1 200 OK
+Content-Type: application/json
+Date: Thu, 19 Aug 2021 16:03:29 +0200
+connection: keep-alive
+content-length: 38
+
+Welcome to GraalVM Polyglot EMEA HOL!
+
 ```
 </p>
 </details>

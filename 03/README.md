@@ -12,12 +12,11 @@
 # Objective
 The purpose of this lab is to showcase **Java interoperability with guest language types.**
 
- To do so, we are going to follow the following steps;
-*  Manually download a CSV dataset of covid-19 hospitalisation's number per day and  per departement in France.
-*  Create a new Java/Python polyglot REST endpoint `/covid19/fr/trends/{departmentId}` to visualize covid trends in the specified departement.
-*  The Java REST Controller will rely on a Polyglot Call `( Java -> R)` using ` Java Proxy Arrays` Parameters to get the graphics representing the covid-19 trends in the specified department.
-*  Return the graphics to the browser in `image/svg+xml`format 
-
+ To do so, we are going to follow the next steps;
+*  Manually download a CSV dataset of covid-19 hospitalisation's number per day and departement in France.
+*  Create a new Java/Python/R polyglot REST endpoint `/covid19/fr/trends/{departmentId}` to visualize covid trends in the specified departement.
+*  The Java REST Controller will rely on a Polyglot Call `( Java -> R)` with ` Java Proxy Arrays` parameters to get the graphics representing the covid-19 trends in the specified department.
+*  The controller returns the graphics to be displayed to the browser in `image/svg+xml`format 
 
 
 
@@ -74,12 +73,12 @@ $ wget https://raw.githubusercontent.com/nelvadas/helidon-polyglot-demo/master/s
 ```
 
 
-
-The following R script uses [Lattice](https://cran.r-project.org/web/packages/lattice/index.html) , a popular Graphics library  .
+The following R script uses [Lattice](https://cran.r-project.org/web/packages/lattice/index.html) , a popular R graphics library .
 
 * It first reads the dataset in parameters.
 *  Assign specific variables for the departement id and  the departemnt  name that are printed on the graphic labels
 *  Get the csv file containing the data.
+* Print the line graph using `xyplot` function.
 
 ```R
 require(lattice);
@@ -132,7 +131,10 @@ The R file will be use in the Java REST Controller
 ![User Input](../images/noun_Computer_3477192_100.png)
 ![Java](../images/noun_java_825609_100.png)
 
-Edit the application configuration file to add `covidgraph.R` and `covid-data.csv` loaction.
+Edit the application configuration file to add two new properties:.
+* `app.covid.data.download.csvfullpath`  to keep the CSV data file location `covid-data.csv`
+* `app.covid.rscript`  to store the `covidgraph.R` file location 
+
 
 ## Application Configuration
 
@@ -159,11 +161,96 @@ app.covid.rscript=~/Projects/Workshops/EMEA-HOL-GraalVMPolyglot/GraalVM-Polyglot
 app.covid.data.download.csvfullpath=/tmp/covid-data.csv
 ```
 
+- add a private instance `rScriptFile` to hold a reference on the R script location
+- add a private instance to keep the location of the csv data file `csvLocalFilePath` 
+- add the associated `@ConfigProperty` in the Controller constructor for both `rScriptUrl` and `csvLocalFilePath` properties
+- create a Source object `rSource` that hold a reference on the R source code 
+ 
 
 
-## Simulating the R Dataframe type in Java with ProxyArrays
+```java
+    private Source rSource;
+    private String rScriptFile;
+    private String csvLocalFilePath;
 
-We have to pass a parameter like [{name=departmentId,values=[]},{name=departmentName,values=[]},{name=csvFilePath,values=[]} ] to the R script.
+    private Context polyglot;
+
+
+    @Inject
+    public CovidResource(@ConfigProperty(name = "app.covid.pyscript") String pythonScriptFile,
+                         @ConfigProperty(name = "app.covid.rscript") String rScriptUrl, 
+                         @ConfigProperty(name = "app.covid.data.download.csvfullpath") String csvLocalFilePath 
+                         ) {
+
+        this.pythonScriptFile = pythonScriptFile;
+        // Create a private member to keep the R Script location
+        this.rScriptFile = rScriptUrl;
+
+        // Create a private member to keep the CSV file path location
+        this.csvLocalFilePath = csvLocalFilePath;
+        try {
+
+          // Context provides an execution environment for guest languages. 
+          // you can pass a list of expected language for this context in the newBuilder Method 
+          // R language requires the allowAllAccess flag to be set to true to run .
+
+            this.polyglot = Context.newBuilder().allowAllAccess(true).build();
+            this.getDepartmentNameByIdFunc = getPythonDeptFunction();
+            this.rSource = Source.newBuilder("R", new File(rScriptFile)).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    } 
+
+ ```
+
+
+##  Calling R function from Java
+
+Edit the controller  `src/main/java/com/oracle/graalvm/demos/Covid19Controller.java` 
+Add a new endpoint function to retreive the graphics data from R. `/trends/{departmentId}`
+The function first computes the departement name by calling the python function,
+then, it build a ProxyArray parameter from 
+* departement Id
+* department name computed from Python 
+* csv file path
+ and pass it to the R script to retreive the line graph data.
+
+
+Add a new endpoint to display SVG Data 
+
+```java
+   @Path("/trends/{departmentId}")
+    @GET
+    @Produces({"image/svg+xml"})
+    public Response getCovidHospitalisationGraphic(@PathParam("departmentId") String departmentId) {
+        // Get the department Name from Python script
+        String departmentName = getDepartmentNameByIdFunc.apply(departmentId);
+        // Display the covid graph in R for the selected department
+        CovidDtoTable.CovidDto[] datas = {new CovidDtoTable.CovidDto(departmentId, csvLocalFilePath, departmentName)};
+        CovidDtoTable dataTable = new CovidDtoTable(datas);
+        Function<CovidDtoTable, String> rplotFunc = polyglot.eval(rSource).as(Function.class);
+        String svgData = rplotFunc.apply(dataTable);
+        return Response.ok(svgData).build();
+    }
+  ```
+
+`dataTable` is a proxy array that mimic data frame type in R.
+
+Proxy interfaces allow to mimic guest language objects, arrays, executables, primitives and native objects in Graal languages.
+Every Graal language will treat instances of proxies like an object of that particular language.
+Multiple proxy interfaces can be implemented at the same time.
+
+## Simulating the R Data frame type in Java with ProxyArrays
+
+We have to pass a parameter like 
+`[ 
+     {name=departmentId,values=[]} ,
+     {name=departmentName,values=[]},  
+     {name=csvFilePath,values=[]} 
+ ]` 
+
+to the R script.
 Create a new file `src/main/java/com/oracle/graalvm/demos/CovidDtoTable.java` with the following content.
 For thus we create a `CovidDtoTable` with three ProxyArray items
 * `DepartmentIdProxyArrayColumn`
@@ -181,9 +268,9 @@ import org.graalvm.polyglot.proxy.ProxyArray;
 
 public final class CovidDtoTable {
 
-    public DepartmentIdProxyArrayColumn departmentId;
-    public DepartmentNameProxyArrayColumn departmentName;
-    public CsvFilePathProxyArrayColumn csvFilePath;
+    public DepartmentIdProxyArrayColumn departmentId; // Departnemnt id Array Column
+    public DepartmentNameProxyArrayColumn departmentName; // Departnemnt name Array Column
+    public CsvFilePathProxyArrayColumn csvFilePath; // csv Datafile  Array Column
 
 
     public CovidDtoTable (CovidDto[] dto) {
@@ -205,6 +292,7 @@ public final class CovidDtoTable {
 
     }
 
+    // Comment
     public static class DepartmentIdProxyArrayColumn implements ProxyArray {
         private final CovidDto[] dto;
         public DepartmentIdProxyArrayColumn(CovidDto[] dto) {
@@ -268,67 +356,7 @@ public final class CovidDtoTable {
 ```
 
 
-
-
-##  Calling R function from Java
-
-Edit the controller  `src/main/java/com/oracle/graalvm/demos/Covid19Controller.java` 
- with the following code 
-
-
-
- *  Add a private instance `rScriptFile` to hold a reference on the R script
- *  `rSource` hold a reference on the source object 
- *  add a properties to keep the location of the csv data file `csvLocalFilePath` 
- *
-
-```java
-    private Source rSource;
-    private String rScriptFile;
-    private String csvLocalFilePath;
-
-    private Context polyglot;
-
-
-    @Inject
-    public CovidResource(@ConfigProperty(name = "app.covid.pyscript") String pythonScriptFile,
-                         @ConfigProperty(name = "app.covid.rscript") String rScriptUrl,
-                         @ConfigProperty(name = "app.covid.data.download.csvfullpath") String csvLocalFilePath) {
-
-        this.pythonScriptFile = pythonScriptFile;
-        this.rScriptFile = rScriptUrl;
-        this.csvLocalFilePath = csvLocalFilePath;
-        try {
-            this.polyglot = Context.newBuilder().allowAllAccess(true).build();
-            this.getDepartmentNameByIdFunc = getPythonDeptFunction();
-            this.rSource = Source.newBuilder("R", new File(rScriptFile)).build();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    } 
-
- ```
-
-
-
-Add a new endpoint to display SVG Data 
-
-```java
-   @Path("/trends/{departmentId}")
-    @GET
-    @Produces({"image/svg+xml"})
-    public Response getCovidHospitalisationGraphic(@PathParam("departmentId") String departmentId) {
-        // Get the department Name from Python script
-        String departmentName = getDepartmentNameByIdFunc.apply(departmentId);
-        // Display the covid graph in R for the selected department
-        CovidDtoTable.CovidDto[] datas = {new CovidDtoTable.CovidDto(departmentId, csvLocalFilePath, departmentName)};
-        CovidDtoTable dataTable = new CovidDtoTable(datas);
-        Function<CovidDtoTable, String> rplotFunc = polyglot.eval(rSource).as(Function.class);
-        String svgData = rplotFunc.apply(dataTable);
-        return Response.ok(svgData).build();
-    }
-  ```
-
+## Testing 
 
 Run the application from your  browser/Terminal 
 if the helidon Dev loop is not enabled, 
@@ -367,4 +395,5 @@ http://localhost:8080/covid19/fr/trends/17
 In this labs, you built and run Polyglot Application running Java, Javascript , R and Python
 You used Proxy Arrays to simulate R Dataframes
 
-
+## Resources 
+* [Proxy Array Interface ](https://docs.oracle.com/en/graalvm/enterprise/20/sdk/org/graalvm/polyglot/proxy/ProxyArray.html)
